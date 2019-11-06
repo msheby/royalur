@@ -103,6 +103,7 @@ def pitStrategies(playerX, playerO, N, sEvery = -1) :
       print(Xs,Ys)
 
   return Xs,Ys
+# A default player when there is nothing else. 
 
 def getDBmove(moves, db) :
   """ Get best move among ``moves`` according to DB. Fallback to human-like player if necessary. """
