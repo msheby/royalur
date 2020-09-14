@@ -76,7 +76,7 @@ much closer to its true value. Repeating the procedure, plugging those new "esti
 gets approximately (0.66, 0.47), and after just five iterations the probabilities are accurate to two
 decimal places. This is a well known technique called `Fixed-point iteration
 <https://en.wikipedia.org/wiki/Fixed-point_iteration>`_, and if the system is "well behaved" it can
-work with millions of dimensions, and it better fucking will because it's our only hope here.
+work with millions of dimensions, and it had better do so because it's our only hope here.
 
 So we need to write the win probability of every position as an expression involving the probability
 of "descendant" positions, but it is rarely as simple as for (a) and (b), which had just a single
