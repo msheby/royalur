@@ -8,9 +8,9 @@ Read about the game and code at <https://jheled.github.io/royalur/>.
 
 Both the distribution and Github are missing the database file, as the current repo
 doesn't have LFS enabled. If you want to run with Ishtar (and you do),
-download the file and place it in the 'lib/site-packages/royalur/data' directory.
+download the file and place it in the 'royalur/data' directory.
 
->>> cd lib/site-packages/royalur/data; wget https://filedn.com/llztAlmJ0zvkPa8QEheU5n5/db16.bin
+>>> cd royalur/data; wget https://filedn.com/llztAlmJ0zvkPa8QEheU5n5/db16.bin
 
 When installing the project's wheel, by default no additional dependencies are installed.
 This is sufficient to execute the core library. To run the GUI application on any system,
