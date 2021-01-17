@@ -9,11 +9,18 @@ module1 = setuptools.Extension("royalur.irogaur",
 metadata = dict(re.findall("__([a-z]+)__ = \"([^\"]+)\"",
                 open(os.path.join("royalur", "__init__.py"), "r").read()))
 
+def get_long_description():
+    this_directory = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(this_directory, "README.md")) as f:
+        return f.read().decode("utf-8")
+
 name = "royalur"
 setuptools.setup(
     name=name,
     version=metadata["version"],
     description="Classical Royal Game of Ur",
+    long_description=get_long_description(),
+    long_description_content_type="text/markdown",
     author="Joseph Heled",
     author_email="jheled@gmail.com",
     url="https://github.com/msheby/royalur",

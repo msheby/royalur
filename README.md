@@ -1,20 +1,13 @@
-
-The Royal Game of Ur: The Classic Version
-=========================================
+# The Royal Game of Ur: The Classic Version
 
 Code for playing analyzing and exploring the Royal Game of Ur (classic rules).
 
-Read about the game and code at https://jheled.github.io/royalur/.
+Read about the game and code at <https://jheled.github.io/royalur/>.
 
-Installation:
-=============
+## Installation
 
-You can install directly from Github using pip:
-
->>> pip install 'royalur[curses,Pillow] @ git+https://github.com/msheby/royalur.git'
-
-Both the distribution and Github are missing the database file, which is too big
-for the current repo. If you want to run with Ishtar (and you do),
+Both the distribution and Github are missing the database file, as the current repo
+doesn't have LFS enabled. If you want to run with Ishtar (and you do),
 download the file and place it in the 'lib/site-packages/royalur/data' directory.
 
 >>> cd lib/site-packages/royalur/data; wget https://filedn.com/llztAlmJ0zvkPa8QEheU5n5/db16.bin
