@@ -4,7 +4,7 @@ import re
 import glob
 
 module1 = setuptools.Extension("royalur.irogaur",
-                               [os.path.join("royalur", "irogaur.cc")])
+                               [os.path.join("royalur", "irogaur.c")])
 
 metadata = dict(re.findall("__([a-z]+)__ = \"([^\"]+)\"",
                 open(os.path.join("royalur", "__init__.py"), "r").read()))
