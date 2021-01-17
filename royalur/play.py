@@ -58,7 +58,7 @@ def playGame(playerX=lambda x: x, playerO=lambda x: x,
         b, side = startPosition(), 1
 
     while not gameOver(b):
-        pips = get_pips()
+        pips = sum(get_pips())
 
         if record is not None:
             record.append((board2Code(b), "OX"[side], pips))
@@ -150,7 +150,7 @@ def rolloutPlay(b, side, playerX=hplay, playerO=hplay, evaluator=None):
     """
 
     while not gameOver(b):
-        pips = get_pips()
+        pips = sum(get_pips())
         am = allMoves(b, pips)
         assert am
         if len(am) == 1:
