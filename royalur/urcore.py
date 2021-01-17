@@ -75,7 +75,7 @@ except ImportError:
 __all__ = [
     "startPosition",
     "allActualMoves", "allMoves",
-    "reverseBoard", "homes", "gameOver", "typeBearOff", "totalPositions",
+    "reverseBoard", "homes", "gameOver", "typeBearOff", "TOTAL_POSITIONS",
     "boardAsString", "board2Code", "code2Board", "board2Index", "index2Board",
     "positionsIterator",
     "boardCHmap", "reverseBoardIndex", "boardPos2CH",
@@ -462,7 +462,7 @@ def positionsIterator(gOff=0, rOff=0):
 # m on one side, n on the other
 
 
-def countPosOnBoard(m, n):
+def _countPosOnBoard(m, n):
     assert m >= n
     tot = 0
     for m1 in range(min(m, 6)+1):
@@ -471,15 +471,15 @@ def countPosOnBoard(m, n):
     return tot
 
 
-nPositionsOnBoard = dict()
-for m in range(8):
-    for n in range(m+1):
-        nPositionsOnBoard[m, n] = countPosOnBoard(m, n)
-        if m != n:
-            nPositionsOnBoard[n, m] = nPositionsOnBoard[m, n]
+_nPositionsOnBoard = dict()
+for _m in range(8):
+    for _n in range(_m+1):
+        _nPositionsOnBoard[_m, _n] = _countPosOnBoard(_m, _n)
+        if _m != _n:
+            _nPositionsOnBoard[_n, _m] = _nPositionsOnBoard[_m, _n]
 
 
-def countOff(gOff, yOff):
+def _countPosOffBoard(gOff, yOff):
     tot = 0
     gAvail = 7 - gOff
     for gHome in range(gAvail+1):
@@ -487,23 +487,23 @@ def countOff(gOff, yOff):
         yAvail = 7 - yOff
         for yHome in range(yAvail+1):
             yOnBoard = yAvail - yHome
-            tot += nPositionsOnBoard[gOnBoard, yOnBoard]
+            tot += _nPositionsOnBoard[gOnBoard, yOnBoard]
     return tot
 
 
 nPositionsOff = dict()
-for m in range(8):
-    for n in range(m+1):
-        nPositionsOff[m, n] = countOff(m, n)
-        if m != n:
-            nPositionsOff[n, m] = nPositionsOff[m, n]
+for _m in range(8):
+    for _n in range(_m+1):
+        nPositionsOff[_m, _n] = _countPosOffBoard(_m, _n)
+        if _m != _n:
+            nPositionsOff[_n, _m] = nPositionsOff[_m, _n]
 
-totalPositions = sum(nPositionsOff.values())
+TOTAL_POSITIONS = sum(nPositionsOff.values())
 
 # 0 <= Men on board <= 7
 
 
-def startPoint(gOff, rOff, gHome, rHome):
+def _startPoint(gOff, rOff, gHome, rHome):
     n = 0
     for i in range(gOff):
         for j in range(7+1):
@@ -515,15 +515,15 @@ def startPoint(gOff, rOff, gHome, rHome):
     for k in range(gHome):
         for l in range((7-rOff) + 1):
             g, r = 7 - (k + gOff), 7 - (l + rOff)
-            n1 += nPositionsOnBoard[g, r]
+            n1 += _nPositionsOnBoard[g, r]
 
     for l in range(rHome):
         g, r = 7 - (gHome + gOff), 7 - (l + rOff)
-        n1 += nPositionsOnBoard[g, r]
+        n1 += _nPositionsOnBoard[g, r]
     return n + n1
 
 
-def partialSums(gMen, rMen):
+def _partialSums(gMen, rMen):
     tot = 0
     ps = [tot]
     for m1 in range(min(gMen, 6)+1):
@@ -533,7 +533,7 @@ def partialSums(gMen, rMen):
     return ps
 
 
-def bitsIndex(bits):
+def _bits2Index(bits):
     k = sum(bits)
     N = len(bits)
     i = 0
@@ -545,7 +545,7 @@ def bitsIndex(bits):
     return i
 
 
-def i2bits(i, k, N):
+def _index2Bits(i, k, N):
     bits = [0]*N
     j = 0
     while N > 0:
@@ -571,13 +571,13 @@ def i2bits(i, k, N):
 #
 
 
-startings = [(startPoint(gOff, rOff, gHome, rHome), gOff, rOff, gHome, rHome)
+startings = [(_startPoint(gOff, rOff, gHome, rHome), gOff, rOff, gHome, rHome)
              for gOff in range(8) for rOff in range(8)
              for gHome in range(8-gOff) for rHome in range(8-rOff)]
 assert len(set([x[0] for x in startings])) == len([x[0] for x in startings])
 spoints = [x[0] for x in startings]
 spMap = dict([(tuple(x[1:]), x[0]) for x in startings])
-pSums = dict([((gMen, rMen), partialSums(gMen, rMen))
+pSums = dict([((gMen, rMen), _partialSums(gMen, rMen))
               for gMen in range(8) for rMen in range(8)])
 
 
@@ -587,12 +587,12 @@ def __board2Index(board):
 
     gSafe = board[:4] + board[12:14]
     m = sum(gSafe)
-    partSafeG = bitsIndex(gSafe)
+    partSafeG = _bits2Index(gSafe)
     bits = [x == 1 for x in board[4:12]]
-    gStrip = bitsIndex(bits)
+    gStrip = _bits2Index(bits)
     gMen = sum(bits) + m
     bits = [x == -1 for x in (board[15:19] + board[4:12] + board[19:21]) if x != 1]
-    partR = bitsIndex(bits)
+    partR = _bits2Index(bits)
     rMen = sum(bits)
     gHome, rHome = 7 - (gMen + gOff), 7 - (rMen + rOff)
 
@@ -609,7 +609,7 @@ def __board2Index(board):
 def __index2Board(index):
     i = bisect.bisect(spoints, index)
     assert startings[i-1][0] <= index < (startings[i]
-                                         [0] if i < len(startings) else totalPositions)
+                                         [0] if i < len(startings) else TOTAL_POSITIONS)
 
     gOff, rOff, gHome, rHome = startings[i-1][1:]
 
@@ -629,9 +629,9 @@ def __index2Board(index):
     partSafeG = i2 // u
     gStrip = i2 - u * partSafeG
 
-    gSafe = i2bits(partSafeG, m, 6)
-    b4_12 = i2bits(gStrip, gMen - m, 8)
-    bOther = i2bits(partR, rMen, 14 - (gMen-m))
+    gSafe = _index2Bits(partSafeG, m, 6)
+    b4_12 = _index2Bits(gStrip, gMen - m, 8)
+    bOther = _index2Bits(partR, rMen, 14 - (gMen-m))
 
     b = [0]*22
     b[14], b[21] = gOff, rOff

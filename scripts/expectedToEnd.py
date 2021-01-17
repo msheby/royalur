@@ -140,7 +140,7 @@ def playr(b, N):
 
 
 def main():
-    exvals = bytearray(b'\xff') * 4*totalPositions
+    exvals = bytearray(b'\xff') * 4*TOTAL_POSITIONS
 
     for g in range(7):
         for b in positionsIterator(7, g):

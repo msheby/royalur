@@ -33,7 +33,7 @@ class TestCore(unittest.TestCase):
 
 
     def test_boards(self):
-        for i in range(totalPositions):
+        for i in range(TOTAL_POSITIONS):
             self.oneBoard(index2Board(i))
 
 
@@ -45,13 +45,13 @@ class TestCore(unittest.TestCase):
 
 
     def test_rev(self):
-        for i in range(totalPositions):
+        for i in range(TOTAL_POSITIONS):
             b = index2Board(i)
             self.assertEqual(reverseBoard(reverseBoard(b)), b)
 
 
     def test_cov_bug(self):
-        l = bytearray(b"\x00") * totalPositions
+        l = bytearray(b"\x00") * TOTAL_POSITIONS
         for r in range(8):
             for b in positionsIterator(7, r):
                 i = board2Index(b)
@@ -65,7 +65,7 @@ class TestCore(unittest.TestCase):
 
 
     def test_cov_full(self):
-        l = bytearray(b"\x00") * totalPositions
+        l = bytearray(b"\x00") * TOTAL_POSITIONS
         for g in range(8):
             for r in range(8):
                 for b in positionsIterator(g, r):

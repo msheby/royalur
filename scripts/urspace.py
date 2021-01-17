@@ -30,13 +30,13 @@ def main():
   ishtar = getDBplayer(db)
 
   if not os.path.exists(os.path.join(royalURdataDir, "iplay-levels.bin")):
-    bseen = bytearray(b'\x00') * totalPositions
+    bseen = bytearray(b'\x00') * TOTAL_POSITIONS
     bseen[board2Index(startPosition())] = 1
     tot = 1
     level = 1
     while True:
       added = 0
-      for i in range(totalPositions) :
+      for i in range(TOTAL_POSITIONS) :
         assert bseen[i] <= level+1
         if bseen[i] == level:
           board = index2Board(i)
@@ -61,13 +61,13 @@ def main():
     del bseen
 
   if not os.path.exists(os.path.join(royalURdataDir, "ireached-levels.bin")):
-    breached = bytearray(b'\x00') * totalPositions
+    breached = bytearray(b'\x00') * TOTAL_POSITIONS
     breached[board2Index(startPosition())] = 1
     tot = 1
     level = 1
     while True:
       added = 0
-      for i in range(totalPositions) :
+      for i in range(TOTAL_POSITIONS) :
         assert breached[i] <= level+1
         if breached[i] == level:
           board = index2Board(i)

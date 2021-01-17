@@ -23,7 +23,7 @@ Per-Position win probabilities for the full game space.
 """
 from __future__ import absolute_import
 
-from .urcore import totalPositions, board2Index, index2Board
+from .urcore import TOTAL_POSITIONS, board2Index, index2Board
 
 __all__ = ["PositionsWinProbs"]
 
@@ -65,15 +65,15 @@ class PositionsWinProbs(object):
         if fname:
             self.load(fname)
         else:
-            self.b = bytearray(b'\xff') * (4 * totalPositions)
+            self.b = bytearray(b'\xff') * (4 * TOTAL_POSITIONS)
             self.wsize = 4
 
     def load(self, fname):
         with fileFromName(fname) as f:
             self.b = bytearray(f.read())
-        if len(self.b) == 4 * totalPositions:
+        if len(self.b) == 4 * TOTAL_POSITIONS:
             self.wsize = 4
-        elif len(self.b) == 2 * totalPositions:
+        elif len(self.b) == 2 * TOTAL_POSITIONS:
             self.wsize = 2
         else:
             assert False, "corrupt %s, read only %d" % (fname, len(self.b))
