@@ -23,7 +23,9 @@ Per-Position win probabilities for the full game space.
 """
 from __future__ import absolute_import
 
+import os
 import struct
+import array
 
 from .urcore import TOTAL_POSITIONS, board2Index, index2Board
 
@@ -34,57 +36,68 @@ class PositionsWinProbs(object):
     """ Win probability for Green (on play) for each ROGOUR position. """
 
     def __init__(self, filename=None):
+        self.db = array.array("d")
         if filename:
             self.load(filename)
         else:
-            self.wsize = 4
-            self.b = bytearray(b'\xff') * self.wsize * TOTAL_POSITIONS
+            self.formatchar = "f"
+            self.db.extend([float("NaN")] * TOTAL_POSITIONS)
 
 
     def load(self, filename):
-        with open(filename, "rb") as f:
-            self.b = bytearray(f.read())
-        if len(self.b) == 4 * TOTAL_POSITIONS:
-            self.wsize = 4
-        elif len(self.b) == 2 * TOTAL_POSITIONS:
-            self.wsize = 2
+        size = os.path.getsize(filename)
+        if size == 8 * TOTAL_POSITIONS:
+            self.formatchar = "d"
+            readsize = 8
+            fcn = lambda x: x
+        elif size == 4 * TOTAL_POSITIONS:
+            self.formatchar = "f"
+            readsize = 4
+            fcn = lambda x: x
+        elif size == 2 * TOTAL_POSITIONS:
+            self.formatchar = "H"
+            readsize = 2
+            fcn = lambda x: x/(-1 + 2.0**16) if x != 65535 else float("NaN")
         else:
             raise ValueError("corrupt {0}, read only {1}".format(filename, len(self.b)))
+        with open(filename, "rb") as f:
+            for _ in range(TOTAL_POSITIONS):
+                self.db.append(fcn(struct.unpack(">{0}".format(self.formatchar), f.read(readsize))[0]))
 
 
     def save(self, filename):
+        fcn = None
+        if self.formatchar == "d":
+            fcn = lambda x: x
+        elif self.formatchar == "f":
+            fcn = lambda x: x
+        elif self.formatchar == "H":
+            fcn = lambda x: int(x*(-1 + 2.0**16)) if x == x else 65535
         with open(filename, "wb") as f:
-            f.write(self.b)
+            for i in range(TOTAL_POSITIONS):
+                f.write(struct.pack(">{0}".format(self.formatchar), fcn(self.db[i])))
 
 
     def board2key(self, board):
         """Return the db internal 'position'. This happens to be the offset into one humongous
         byte array.
         """
-        return self.wsize * board2Index(board)
+        return board2Index(board)
 
 
     def key2board(self, key):
-        """ Return the key of the board associated with this position. """
-        return index2Board(key//self.wsize)
+        """ Return the board of the key associated with this position. """
+        return index2Board(key)
 
 
     def get(self, bpos):
         """ Get the win probability associated with position ``bpos``. """
-        if self.wsize == 4:
-            v = struct.unpack_from(">l", self.b, bpos)[0]
-            return v/(2.0**31) if v != -1 else None
-        elif self.wsize == 2:
-            v = struct.unpack_from(">H", self.b, bpos)[0]
-            return v/(-1 + 2.0**16) if v != 65535 else None
+        return self.db[bpos] if self.db[bpos] == self.db[bpos] else None
 
 
     def set(self, bpos, pr):
         """ Set the win probability associated with position ``bpos`` to ``pr``. """
-        if self.wsize == 4:
-            struct.pack_into(">l", self.b, bpos, int(pr * 2.0**31))
-        elif self.wsize == 2:
-            struct.pack_into(">H", self.b, bpos, int(pr * (-1 + 2**16)))
+        self.db[bpos] = pr
 
 
     # convenience
