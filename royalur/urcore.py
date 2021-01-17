@@ -89,7 +89,7 @@ RD_OFF = 21
 def reverseBoard(board):
     """ Reverse roles of Red and Green. """
 
-    r = [0]*22
+    r = startPosition()
     for i in range(4):
         opp = 15+i
         r[i] = -board[opp]
@@ -292,7 +292,7 @@ def code2Board(e):
     oAtHome = int(s[9:12], 2)
     assert 0 <= atHome <= 7 and 0 <= oAtHome <= 7
 
-    board = [0]*22
+    board = startPosition()
     for b, k in ((3, 0), (4, 1), (5, 2), (6, 3), (7, 12), (8, 13)):
         if s[b] == "1":
             board[k] = 1
@@ -379,7 +379,7 @@ def bitsIterator(k, n):
 #   """ Iterate over all green pieces positions with *gOff* pieces off board. """
 
 #   gMen = 7-gOff
-#   b = [0]*22
+#   b = startPosition()
 #   b[GR_OFF] = gOff
 #   for gHome in range(gMen, -1, -1):
 #     gOnBoard = gMen - gHome
@@ -396,7 +396,7 @@ def gIterator(gOff=0):
     """ Iterate over all green pieces positions with *gOff* pieces off board. """
 
     gMen = 7-gOff
-    b = [0]*22
+    b = startPosition()
     b[GR_OFF] = gOff
     for gHome in range(gMen, -1, -1):
         gOnBoard = gMen - gHome
@@ -633,7 +633,7 @@ def __index2Board(index):
     b4_12 = _index2Bits(gStrip, gMen - m, 8)
     bOther = _index2Bits(partR, rMen, 14 - (gMen-m))
 
-    b = [0]*22
+    b = startPosition()
     b[14], b[21] = gOff, rOff
     b[:4] = gSafe[:4]
     b[12:14] = gSafe[4:]

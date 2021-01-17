@@ -37,7 +37,7 @@ def _binomial(n, k):
         return 0
     if k == 0:
         return 1
-    if n == k :
+    if n == k:
         return 1
     return _binomial(n - 1, k) + _binomial(n - 1, k - 1)
 

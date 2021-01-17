@@ -30,6 +30,7 @@
 """
 from __future__ import absolute_import
 
+from .dice import *
 from .urcore import *
 from .probsdb import *
 from .play import *
