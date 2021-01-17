@@ -1,8 +1,18 @@
-## This file is part of royalUr.
-## Copyright (C) 2018 Joseph Heled.
-## Author: Joseph Heled <jheled@gmail.com>
-## See the file LICENSE for copying conditions.
+# Copyright (C) 2018 Joseph Heled.
+# Copyright (c) 2019-2021 Matthew Sheby.
 #
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 ==========================
@@ -18,211 +28,219 @@ __all__ = ["rollout", "getDBplayer", "ply1", "prob"]
 
 import random
 
-try:
-  from .urcore import *
-  # A default player when there is nothing else.
-  from .humanStrategies import bestHumanStrategySoFar as hplay
-  from .probsdb import PositionsWinProbs
-except ImportError:
-  from urcore import *
-  # A default player when there is nothing else.
-  from humanStrategies import bestHumanStrategySoFar as hplay
-  from probsdb import PositionsWinProbs
+from .dice import *
+from .urcore import *
+# A default player when there is nothing else.
+from .humanStrategies import bestHumanStrategySoFar as hplay
+from .probsdb import PositionsWinProbs
 
 
-def showBoard(b) :
-  """ Print board ``b`` on stdout (debug). """
+def showBoard(b):
+    """ Print board ``b`` on stdout (debug). """
 
-  print(boardAsString(b))
+    print(boardAsString(b))
 
-def playGame(playerX = lambda x : x, playerO = lambda x : x,
-             startingBoardAndSide = None, record = None) :
-  """ Play one game from start to finish. Report who won.
 
-  Use playerX/playerO to determine X/O moves. Use a random player if unspecified. Start at
-  ``startingBoardAndSide`` if given. If ``record`` is not None fill it with a record of the game,
-  each move specified as a triplet (board-code, side-to-play, pips (the dice)).
+def playGame(playerX=lambda x: x, playerO=lambda x: x,
+             startingBoardAndSide=None, record=None):
+    """ Play one game from start to finish. Report who won.
 
-  Return last board and the side on move, i.e. the loser.
-  """
+    Use playerX/playerO to determine X/O moves. Use a random player if unspecified. Start at
+    ``startingBoardAndSide`` if given. If ``record`` is not None fill it with a record of the game,
+    each move specified as a triplet (board-code, side-to-play, pips (the dice)).
 
-  if startingBoardAndSide:
-    b,side = startingBoardAndSide
-  else :
-    b,side = startPosition(), 1
+    Return last board and the side on move, i.e. the loser.
+    """
 
-  while not gameOver(b) :
-    pips = getPips()
+    if startingBoardAndSide:
+        b, side = startingBoardAndSide
+    else:
+        b, side = startPosition(), 1
+
+    while not gameOver(b):
+        pips = get_pips()
+
+        if record is not None:
+            record.append((board2Code(b), "OX"[side], pips))
+
+        am = allMoves(b, pips)
+        assert am
+
+        if len(am) == 1:
+            m, e = am[0]
+        else:
+            le = (playerX if side else playerO)(am)
+
+            if len(le) == 1:
+                m, e = le[0]
+            else:
+                m, e = random.choice(le)
+
+        b = m
+        if not e:
+            side = 1 - side
 
     if record is not None:
-      record.append((board2Code(b),"OX"[side],pips))
+        record.append((board2Code(b), "OX"[side], None))
 
-    am = allMoves(b, pips);                                         assert am
+    return b, "OX"[side]
 
-    if len(am) == 1:
-      m,e = am[0]
-    else :
-      le = (playerX if side else playerO)(am)
 
-      if len(le) == 1:
-        m,e = le[0]
-      else :
-        m,e = random.choice(le)
+def showGame(record):
+    """ Print game record on stdout (debug) """
 
-    b = m
-    if not e :
-      side = 1 - side
+    nm = 1
+    for board, side, pips in record:
+        print(nm, ": ", "OX"[side] + " pips:", pips)
+        nm += 1
+        board = code2Board(board)
+        showBoard(board if side == 1 else reverseBoard(board))
+        print()
 
-  if record is not None:
-    record.append((board2Code(b),"OX"[side],None))
 
-  return b,"OX"[side]
+def pitStrategies(playerX, playerO, N, sEvery=-1):
+    """ Play ``N`` games games between two strategies, report number of wins for X and O. """
+    Xs, Ys = 0, 0
+    for k in range(N//2):
+        b, t = playGame(playerX, playerO)
+        Xs += t == 'O'
+        Ys += t == 'X'
+        b, t = playGame(playerO, playerX)
+        Xs += t == 'X'
+        Ys += t == 'O'
+        if sEvery > 0 and (k % sEvery == 0):
+            print(Xs, Ys)
 
-def showGame(record) :
-  """ Print game record on stdout (debug) """
+    return Xs, Ys
 
-  nm = 1
-  for board,side,pips in record:
-    print(nm,": ","OX"[side] + " pips:",pips)
-    nm += 1
-    board = code2Board(board)
-    showBoard(board if side == 1 else reverseBoard(board))
-    print()
 
-def pitStrategies(playerX, playerO, N, sEvery = -1) :
-  """ Play ``N`` games games between two strategies, report number of wins for X and O. """
-  Xs,Ys = 0,0
-  for k in range(N//2) :
-    b,t = playGame(playerX, playerO)
-    Xs += t == 'O'
-    Ys += t == 'X'
-    b,t = playGame(playerO, playerX)
-    Xs += t == 'X'
-    Ys += t == 'O'
-    if sEvery > 0 and (k % sEvery == 0):
-      print(Xs,Ys)
+# A default player when there is nothing else.
+def getDBmove(moves, db):
+    """ Get best move among ``moves`` according to DB. Fallback to human-like player if necessary. """
 
-  return Xs,Ys
-# A default player when there is nothing else. 
+    if not db:
+        return hplay(moves)
 
-def getDBmove(moves, db) :
-  """ Get best move among ``moves`` according to DB. Fallback to human-like player if necessary. """
+    mvs = [(db.aget(b), b, e) for b, e in moves]
+    if not all([p is not None for p, b, e in mvs]):
+        return hplay(moves)
 
-  if not db :
-    return hplay(moves)
+    p, b, e = max([(p if e else 1 - p, b, e) for p, b, e in mvs])
+    return [(b, e)]
 
-  mvs = [(db.aget(b),b,e) for b,e in moves]
-  if not all([p is not None for p,b,e in mvs]) :
-    return hplay(moves)
 
-  p,b,e = max([(p if e else 1 - p,b,e) for p,b,e in mvs])
-  return [(b,e)]
+def getDBplayer(db):
+    """ Return a player using probabilities from ``db``.
 
-def getDBplayer(db) :
-  """ Return a player using probabilities from ``db``.
+    Fall back to default human player if position has no DB entry.
+    """
 
-  Fall back to default human player if position has no DB entry.
-  """
+    if isinstance(db, str):
+        db = PositionsWinProbs(db)
 
-  if isinstance(db, str) :
-    db = PositionsWinProbs(db)
+    return lambda moves: getDBmove(moves, db)
 
-  return lambda moves : getDBmove(moves, db)
 
-def rolloutPlay(b, side, playerX = hplay, playerO = hplay, evaluator = None) :
-  """ Play ``b`` to completion. Report who won.
+def rolloutPlay(b, side, playerX=hplay, playerO=hplay, evaluator=None):
+    """ Play ``b`` to completion. Report who won.
 
-  Use playerX/playerO to determine X/O moves. If unspecified, use the best human-like player. If
-  ``evaluator`` is given, truncate the game at the first position with a valid probability, and
-  return it.
-  """
+    Use playerX/playerO to determine X/O moves. If unspecified, use the best human-like player. If
+    ``evaluator`` is given, truncate the game at the first position with a valid probability, and
+    return it.
+    """
 
-  while not gameOver(b) :
-    pips = getPips()
-    am = allMoves(b, pips);                     assert am
-    if len(am) == 1:
-      m,e = am[0]
-    else :
-      le = (playerX if side else playerO)(am)
-      if len(le) == 1:
-        m,e = le[0]
-      else :
-        m,e = random.choice(le)
+    while not gameOver(b):
+        pips = get_pips()
+        am = allMoves(b, pips)
+        assert am
+        if len(am) == 1:
+            m, e = am[0]
+        else:
+            le = (playerX if side else playerO)(am)
+            if len(le) == 1:
+                m, e = le[0]
+            else:
+                m, e = random.choice(le)
 
-    b = m
-    if not e :
-      side = 1 - side
-    if evaluator:
-      p = evaluator(b)
-      if p is not None:
-        return side, p
+        b = m
+        if not e:
+            side = 1 - side
+        if evaluator:
+            p = evaluator(b)
+            if p is not None:
+                return side, p
 
-  return 1-side,1
+    return 1-side, 1
 
-def rollout(board, nTrials, playerX = None, playerO = None, evaluator = None) :
-  """ Play ``board`` ``nTrials`` times. Report percentage of wins.
 
-  Use playerX/playerO to determine X/O moves. If unspecified, use the best human-like player. If
-  ``evaluator`` is given, truncate the rollout at the first position with a valid probability.
-  """
+def rollout(board, nTrials, playerX=None, playerO=None, evaluator=None):
+    """ Play ``board`` ``nTrials`` times. Report percentage of wins.
 
-  wc = 0
-  for _ in range(nTrials) :
-    side,p = rolloutPlay(getBoard(board), 1, playerX or hplay, playerO or hplay, evaluator)
-    wc += p if side == 1 else 1-p
-  return float(wc)/nTrials
+    Use playerX/playerO to determine X/O moves. If unspecified, use the best human-like player. If
+    ``evaluator`` is given, truncate the rollout at the first position with a valid probability.
+    """
 
-def ply1(board, db) :
-  """ Win probability of ``board`` at 1-ply. """
+    wc = 0
+    for _ in range(nTrials):
+        side, p = rolloutPlay(board, 1, playerX or hplay,
+                              playerO or hplay, evaluator)
+        wc += p if side == 1 else 1-p
+    return float(wc)/nTrials
 
-  pWin = 0
-  for pr,pips in (((1./16), 0), ((1./4), 1), ((3./8), 2), ((1./4), 3), ((1./16),4)) :
-    am = allMoves(board, pips)
-    maxp = -1
-    for b,e in am:
-      if gameOver(b) :
-        maxp = 1
-        break
 
-      p = db.aget(b);             assert p is not None;
-      if not e:
-        p = 1 - p
-      if p > maxp :
-        maxp = p
+def ply1(board, db):
+    """ Win probability of ``board`` at 1-ply. """
 
-    assert 0 <= maxp <= 1
-    pWin += pr * maxp
+    pWin = 0
+    for pr, pips in (((1./16), 0), ((1./4), 1), ((3./8), 2), ((1./4), 3), ((1./16), 4)):
+        am = allMoves(board, pips)
+        maxp = -1
+        for b, e in am:
+            if gameOver(b):
+                maxp = 1
+                break
 
-  assert 0 <= pWin <= 1
-  return pWin
+            p = db.aget(b)
+            assert p is not None
+            if not e:
+                p = 1 - p
+            if p > maxp:
+                maxp = p
 
-def prob(board, ply, db) :
-  """ Win probability of ``board`` at ``ply``-ply. """
+        assert 0 <= maxp <= 1
+        pWin += pr * maxp
 
-  if ply == 0 :
-    return db.aget(board)
-  if ply == 1:
-    return ply1(board, db)
+    assert 0 <= pWin <= 1
+    return pWin
 
-  pWin = 0
-  for pr,pips in (((1./16), 0), ((1./4), 1), ((3./8), 2), ((1./4), 3), ((1./16),4)) :
-    am = allMoves(board, pips)
-    maxp = -1
-    for b,e in am:
-      if gameOver(b) :
-        maxp = 1
-        break
 
-      p = prob(b, ply-1, db)
-      if not e:
-        p = 1 - p
-      if p > maxp :
-        maxp = p
+def prob(board, ply, db):
+    """ Win probability of ``board`` at ``ply``-ply. """
 
-    assert 0 <= maxp <= 1
-    pWin += pr * maxp
+    if ply == 0:
+        return db.aget(board)
+    if ply == 1:
+        return ply1(board, db)
 
-  assert 0 <= pWin <= 1
-  return pWin
+    pWin = 0
+    for pr, pips in (((1./16), 0), ((1./4), 1), ((3./8), 2), ((1./4), 3), ((1./16), 4)):
+        am = allMoves(board, pips)
+        maxp = -1
+        for b, e in am:
+            if gameOver(b):
+                maxp = 1
+                break
+
+            p = prob(b, ply-1, db)
+            if not e:
+                p = 1 - p
+            if p > maxp:
+                maxp = p
+
+        assert 0 <= maxp <= 1
+        pWin += pr * maxp
+
+    assert 0 <= pWin <= 1
+    return pWin
 
 #  LocalWords:  rollout evaluator
