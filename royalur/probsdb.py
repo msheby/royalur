@@ -40,8 +40,9 @@ class PositionsWinProbs(object):
         if filename:
             self.load(filename)
         else:
-            self.formatchar = "f"
-            self.db.extend([float("NaN")] * TOTAL_POSITIONS)
+            self.formatchar = "d"
+            self.db.extend([0.5] * TOTAL_POSITIONS)
+            self.db[-1] = float("NaN")
 
 
     def load(self, filename):
