@@ -11,8 +11,8 @@ metadata = dict(re.findall("__([a-z]+)__ = \"([^\"]+)\"",
 
 def get_long_description():
     this_directory = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(this_directory, "README.md")) as f:
-        return f.read().decode("utf-8")
+    with open(os.path.join(this_directory, "README.md"), "r") as f:
+        return f.read()
 
 name = "royalur"
 setuptools.setup(
