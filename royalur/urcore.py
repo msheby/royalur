@@ -457,7 +457,7 @@ def positionsIterator(gOff=0, rOff=0):
 
     for b in gIterator(gOff):
         for b1 in rIterator(b, rOff):
-            yield list(b1)
+            yield b1
 
 # m on one side, n on the other
 
