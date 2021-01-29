@@ -165,7 +165,7 @@ def allActualMoves(board, pips, froms=None):
     if atHome:
         to = pips-1
         if board[to] == 0:
-            b = list(board)
+            b = board[:]
             b[to] = 1
             moves.append((b, extraTurnA[to]))
             if froms is not None:
@@ -175,14 +175,14 @@ def allActualMoves(board, pips, froms=None):
             to = i + pips
             if to < 14 and board[to] != 1:
                 if board[to] == 0 or to != 7:
-                    b = list(board)
+                    b = board[:]
                     b[i] = 0
                     b[to] = 1
                     moves.append((b, extraTurnA[to]))
                     if froms is not None:
                         froms.append(i)
             elif to == 14:
-                b = list(board)
+                b = board[:]
                 b[i] = 0
                 b[14] += 1
                 moves.append((b, False))
@@ -353,7 +353,7 @@ def bitsIterator(k, n):
         yield (1,)*n
     else:
         b = [1]*k + [0]*(n-k)
-        yield list(b)
+        yield b[:]
 
         while True:
             i = 0
@@ -372,7 +372,7 @@ def bitsIterator(k, n):
                 b[k] = 1
             b[j-1] = 0
             b[j] = 1  # assert b == [1]*(j-i-1) + [0]*(i+1) + [1] + b[j+1:]
-            yield list(b)
+            yield b[:]
 
 
 # def gIterator(gOff = 0):
@@ -389,7 +389,7 @@ def bitsIterator(k, n):
 #         b[12:14] = onMine[4:]
 #         for onStrip in bitsIterator(gOnBoard - gOnMine, 8):
 #           b[4:12] = onStrip
-#           yield list(b)
+#           yield b[:]
 
 
 def gIterator(gOff=0):
@@ -406,21 +406,21 @@ def gIterator(gOff=0):
                 for onMine in bitsIterator(gOnMine, 6):
                     b[:4] = onMine[:4]
                     b[12], b[13] = onMine[4], onMine[5]
-                    yield list(b)
+                    yield b[:]
 
 
 def rIterator(board, rOff=0):
     """ Iterate over all red pieces positions with *rOff* pieces off board, conditional on present
     green pieces as given in *board*. """
 
-    b = list(board)
+    b = board[:]
     b[RD_OFF] = rOff
     rMen = 7-rOff
     bStrip = b[4:12]
     for rHome in range(rMen, -1, -1):
         rOnBoard = rMen - rHome
         for rOnMine in range(min(6, rOnBoard), -1, -1):
-            oo = list(bitsIterator(rOnMine, 6))
+            oo = bitsIterator(rOnMine, 6)[:]
             for onStrip in bitsIterator(rOnBoard - rOnMine, 8):
                 if any([x == 1 and y == 1 for x, y in zip(onStrip, bStrip)]):
                     continue
@@ -428,14 +428,14 @@ def rIterator(board, rOff=0):
                 for onMine in oo:
                     b[15:19] = [-x for x in onMine[:4]]
                     b[19], b[20] = -onMine[4], -onMine[5]
-                    yield list(b)
+                    yield b[:]
 
 
 # def rIterator(board, rOff = 0):
 #   """ Iterate over all red pieces positions with *rOff* pieces off board, conditional on present
 #   green pieces as given in *board*. """
 
-#   b = list(board)
+#   b = board[:]
 #   b[RD_OFF] = rOff
 #   rMen = 7-rOff
 #   bStrip = b[4:12]
@@ -449,7 +449,7 @@ def rIterator(board, rOff=0):
 #            if any([x == 1 and y == 1 for x,y in zip(onStrip, bStrip)]):
 #              continue
 #            b[4:12] = [-1 if x else y for x,y in zip(onStrip, bStrip)]
-#            yield list(b)
+#            yield b[:]
 
 
 def positionsIterator(gOff=0, rOff=0):
