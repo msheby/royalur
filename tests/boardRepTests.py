@@ -38,8 +38,8 @@ class TestCore(unittest.TestCase):
 
 
     def test_all_boards(self):
-        for g in range(8):
-            for r in range(8):
+        for g in range(7):
+            for r in range(7):
                 for b in positionsIterator(g, r):
                     self.oneBoard(b)
 
@@ -52,12 +52,12 @@ class TestCore(unittest.TestCase):
 
     def test_cov_bug(self):
         l = bytearray(b"\x00") * TOTAL_POSITIONS
-        for r in range(8):
+        for r in range(7):
             for b in positionsIterator(7, r):
                 i = board2Index(b)
                 self.assertEqual(l[i], 0)
                 l[i] = 1
-        for g in range(8):
+        for g in range(7):
             for b in positionsIterator(g, 7):
                 i = board2Index(b)
                 self.assertEqual(l[i], 0, str(i) + "," + repr(b))
@@ -66,8 +66,8 @@ class TestCore(unittest.TestCase):
 
     def test_cov_full(self):
         l = bytearray(b"\x00") * TOTAL_POSITIONS
-        for g in range(8):
-            for r in range(8):
+        for g in range(7):
+            for r in range(7):
                 for b in positionsIterator(g, r):
                     i = board2Index(b)
                     self.assertEqual(l[i], 0, str(i) + "," + repr(b))
