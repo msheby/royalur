@@ -420,7 +420,7 @@ def rIterator(board, rOff=0):
     for rHome in range(rMen, -1, -1):
         rOnBoard = rMen - rHome
         for rOnMine in range(min(6, rOnBoard), -1, -1):
-            oo = bitsIterator(rOnMine, 6)[:]
+            oo = tuple(bitsIterator(rOnMine, 6))
             for onStrip in bitsIterator(rOnBoard - rOnMine, 8):
                 if any([x == 1 and y == 1 for x, y in zip(onStrip, bStrip)]):
                     continue
